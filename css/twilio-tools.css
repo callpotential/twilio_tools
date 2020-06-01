@@ -1,0 +1,19 @@
+body {
+    padding-top: 0px;
+    padding-bottom: 50px;
+}
+div.tab-pane{
+    padding-top: 20px;
+}
+#progress-div{
+    font-size: small;
+    margin-top: 20px;
+    color: #777;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    display: none;
+}
+h1{
+    margin-bottom: 25px;
+}

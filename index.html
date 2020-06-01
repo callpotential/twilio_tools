@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Twilio Tools</title>
+
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/bootstrap-dialog.css" rel="stylesheet">
+    <link href="css/twilio-tools.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+
+<div class="container">
+    <h1>Twilio Tools</h1>
+
+    <div>
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active">
+                <a href="#sub-accounts" aria-controls="sub-accounts" role="tab" data-toggle="tab">List Sub Accounts</a>
+            </li>
+            <li role="presentation">
+                <a href="#phone-numbers" aria-controls="phone-numbers" role="tab" data-toggle="tab">List Phone
+                    Numbers</a>
+            </li>
+            <li role="presentation">
+                <a href="#recordings" aria-controls="recordings" role="tab" data-toggle="tab">List Recordings</a>
+            </li>
+
+            <li role="presentation">
+                <a href="#del-phone-numbers" aria-controls="del-phone-numbers" role="tab" data-toggle="tab">Delete Phone
+                    Numbers</a>
+            </li>
+            <li role="presentation">
+                <a href="#del-recordings" aria-controls="del-recordings" role="tab" data-toggle="tab">Delete
+                    Recordings</a>
+            </li>
+            <li role="presentation">
+                <a href="#status-sub-accounts" aria-controls="status-sub-accounts" role="tab" data-toggle="tab">Sub
+                    Accounts Status</a>
+            </li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="sub-accounts">
+                <form>
+                    <div class="form-group">
+                        <label for="sid">Master Account SID</label>
+                        <input type="text" class="form-control" id="sid" placeholder="Master Account SID"
+                               value="">
+                    </div>
+                    <div class="form-group">
+                        <label for="token">Master Account Token</label>
+                        <input type="password" class="form-control" id="token" placeholder="Master Account Token"
+                               value="">
+                    </div>
+                    <button type="button" class="btn btn-default" id="fetch-sub-accounts">Fetch</button>
+                </form>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="phone-numbers">
+                <form>
+                    <div class="form-group">
+                        <label for="list-phone-numbers-file">Input CSV</label>
+                        <input type="file" id="list-phone-numbers-file">
+
+                        <p class="help-block">Choose CSV file with SID/token pairs.</p>
+                    </div>
+                    <button type="button" class="btn btn-default" id="fetch-phone-numbers">Fetch</button>
+                </form>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="recordings">
+                <form>
+                    <div class="form-group">
+                        <label for="list-recordings-file">Input CSV</label>
+                        <input type="file" id="list-recordings-file">
+
+                        <p class="help-block">Choose CSV file with SID/token pairs.</p>
+                    </div>
+                    <button type="button" class="btn btn-default" id="fetch-recordings">Fetch</button>
+                </form>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="del-phone-numbers">
+                <form>
+                    <div class="form-group">
+                        <label for="delete-phone-numbers-file">Input CSV</label>
+                        <input type="file" id="delete-phone-numbers-file">
+
+                        <p class="help-block">Choose file with AccountSID/token/PhoneNumberSID CSV data.</p>
+                    </div>
+                    <button type="button" class="btn btn-default" id="delete-phone-numbers">Delete</button>
+                </form>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="del-recordings">
+                <form>
+                    <div class="form-group">
+                        <label for="delete-recordings-file">Input CSV</label>
+                        <input type="file" id="delete-recordings-file">
+
+                        <p class="help-block">Choose file with AccountSID/token/RecordingSID CSV data.</p>
+                    </div>
+                    <button type="button" class="btn btn-default" id="delete-recordings">Delete</button>
+                </form>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="status-sub-accounts">
+                <form>
+                    <div class="form-group">
+                        <label for="status-sid">Master Account SID</label>
+                        <input type="text" class="form-control" id="status-sid" placeholder="Master Account SID"
+                               value="">
+                    </div>
+                    <div class="form-group">
+                        <label for="status-token">Master Account Token</label>
+                        <input type="password" class="form-control" id="status-token" placeholder="Master Account Token"
+                               value="">
+                    </div>
+                    <div class="form-group">
+                        <div class="btn-group" data-toggle="buttons">
+                            <label class="btn btn-primary active">
+                                <input type="radio" name="status-value" id="status-value-suspended" autocomplete="off" checked> Suspend
+                            </label>
+                            <label class="btn btn-primary">
+                                <input type="radio" name="status-value" id="status-value-active" autocomplete="off"> Activate
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="status-sub-accounts-file">Input CSV</label>
+                        <input type="file" id="status-sub-accounts-file">
+                        <p class="help-block">Choose CSV file with sub-accounts SIDs to change status.</p>
+                    </div>
+                    <button type="button" class="btn btn-default" id="status-sub-accounts-btn">Change Status</button>
+                </form>
+            </div>
+        </div>
+        <div id="progress-div"></div>
+    </div>
+</div>
+
+<script src="assets/js/jquery-3.1.0.min.js"></script>
+<script src="assets/js/loadingoverlay.min.js"></script>
+<script src="assets/js/jquery.csv.min.js"></script>
+<script src="assets/js/bootstrap.min.js"></script>
+<script src="assets/js/bootstrap-dialog.js"></script>
+<script src="js/twilio-util.js"></script>
+<script src="js/twilio-subaccount.js"></script>
+<script src="js/twilio-phonenumber.js"></script>
+<script src="js/twilio-recording.js"></script>
+</body>
+</html>
