@@ -10,28 +10,27 @@
 namespace Twilio\Rest\Taskrouter\V1\Workspace\Worker;
 
 use Twilio\ListResource;
+use Twilio\Stream;
 use Twilio\Values;
 use Twilio\Version;
 
 class WorkerChannelList extends ListResource {
     /**
      * Construct the WorkerChannelList
-     * 
+     *
      * @param Version $version Version that contains the resource
-     * @param string $workspaceSid The workspace_sid
-     * @param string $workerSid The worker_sid
-     * @return \Twilio\Rest\Taskrouter\V1\Workspace\Worker\WorkerChannelList 
+     * @param string $workspaceSid The SID of the Workspace that contains the
+     *                             WorkerChannel
+     * @param string $workerSid The SID of the Worker that contains the
+     *                          WorkerChannel
      */
-    public function __construct(Version $version, $workspaceSid, $workerSid) {
+    public function __construct(Version $version, string $workspaceSid, string $workerSid) {
         parent::__construct($version);
-        
+
         // Path Solution
-        $this->solution = array(
-            'workspaceSid' => $workspaceSid,
-            'workerSid' => $workerSid,
-        );
-        
-        $this->uri = '/Workspaces/' . $workspaceSid . '/Workers/' . $workerSid . '/Channels';
+        $this->solution = ['workspaceSid' => $workspaceSid, 'workerSid' => $workerSid, ];
+
+        $this->uri = '/Workspaces/' . \rawurlencode($workspaceSid) . '/Workers/' . \rawurlencode($workerSid) . '/Channels';
     }
 
     /**
@@ -41,7 +40,7 @@ class WorkerChannelList extends ListResource {
      * is reached.
      * The results are returned as a generator, so this operation is memory
      * efficient.
-     * 
+     *
      * @param int $limit Upper limit for the number of records to return. stream()
      *                   guarantees to never return more than limit.  Default is no
      *                   limit
@@ -50,13 +49,13 @@ class WorkerChannelList extends ListResource {
      *                        page_size is defined but a limit is defined, stream()
      *                        will attempt to read the limit with the most
      *                        efficient page size, i.e. min(limit, 1000)
-     * @return \Twilio\Stream stream of results
+     * @return Stream stream of results
      */
-    public function stream($limit = null, $pageSize = null) {
+    public function stream(int $limit = null, $pageSize = null): Stream {
         $limits = $this->version->readLimits($limit, $pageSize);
-        
+
         $page = $this->page($limits['pageSize']);
-        
+
         return $this->version->stream($page, $limits['limit'], $limits['pageLimit']);
     }
 
@@ -64,7 +63,7 @@ class WorkerChannelList extends ListResource {
      * Reads WorkerChannelInstance records from the API as a list.
      * Unlike stream(), this operation is eager and will load `limit` records into
      * memory before returning.
-     * 
+     *
      * @param int $limit Upper limit for the number of records to return. read()
      *                   guarantees to never return more than limit.  Default is no
      *                   limit
@@ -75,42 +74,49 @@ class WorkerChannelList extends ListResource {
      *                        efficient page size, i.e. min(limit, 1000)
      * @return WorkerChannelInstance[] Array of results
      */
-    public function read($limit = null, $pageSize = Values::NONE) {
-        return iterator_to_array($this->stream($limit, $pageSize), false);
+    public function read(int $limit = null, $pageSize = null): array {
+        return \iterator_to_array($this->stream($limit, $pageSize), false);
     }
 
     /**
      * Retrieve a single page of WorkerChannelInstance records from the API.
      * Request is executed immediately
-     * 
+     *
      * @param mixed $pageSize Number of records to return, defaults to 50
      * @param string $pageToken PageToken provided by the API
      * @param mixed $pageNumber Page Number, this value is simply for client state
-     * @return \Twilio\Page Page of WorkerChannelInstance
+     * @return WorkerChannelPage Page of WorkerChannelInstance
      */
-    public function page($pageSize = Values::NONE, $pageToken = Values::NONE, $pageNumber = Values::NONE) {
-        $params = Values::of(array(
-            'PageToken' => $pageToken,
-            'Page' => $pageNumber,
-            'PageSize' => $pageSize,
-        ));
-        
-        $response = $this->version->page(
+    public function page($pageSize = Values::NONE, string $pageToken = Values::NONE, $pageNumber = Values::NONE): WorkerChannelPage {
+        $params = Values::of(['PageToken' => $pageToken, 'Page' => $pageNumber, 'PageSize' => $pageSize, ]);
+
+        $response = $this->version->page('GET', $this->uri, $params);
+
+        return new WorkerChannelPage($this->version, $response, $this->solution);
+    }
+
+    /**
+     * Retrieve a specific page of WorkerChannelInstance records from the API.
+     * Request is executed immediately
+     *
+     * @param string $targetUrl API-generated URL for the requested results page
+     * @return WorkerChannelPage Page of WorkerChannelInstance
+     */
+    public function getPage(string $targetUrl): WorkerChannelPage {
+        $response = $this->version->getDomain()->getClient()->request(
             'GET',
-            $this->uri,
-            $params
+            $targetUrl
         );
-        
+
         return new WorkerChannelPage($this->version, $response, $this->solution);
     }
 
     /**
      * Constructs a WorkerChannelContext
-     * 
-     * @param string $sid The sid
-     * @return \Twilio\Rest\Taskrouter\V1\Workspace\Worker\WorkerChannelContext 
+     *
+     * @param string $sid The SID of the to fetch
      */
-    public function getContext($sid) {
+    public function getContext(string $sid): WorkerChannelContext {
         return new WorkerChannelContext(
             $this->version,
             $this->solution['workspaceSid'],
@@ -121,10 +127,10 @@ class WorkerChannelList extends ListResource {
 
     /**
      * Provide a friendly representation
-     * 
+     *
      * @return string Machine friendly representation
      */
-    public function __toString() {
+    public function __toString(): string {
         return '[Twilio.Taskrouter.V1.WorkerChannelList]';
     }
 }

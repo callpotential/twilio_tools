@@ -11,11 +11,13 @@ namespace Twilio\Rest\Api\V2010;
 
 use Twilio\Exceptions\TwilioException;
 use Twilio\InstanceContext;
+use Twilio\ListResource;
 use Twilio\Options;
 use Twilio\Rest\Api\V2010\Account\AddressList;
 use Twilio\Rest\Api\V2010\Account\ApplicationList;
 use Twilio\Rest\Api\V2010\Account\AuthorizedConnectAppList;
 use Twilio\Rest\Api\V2010\Account\AvailablePhoneNumberCountryList;
+use Twilio\Rest\Api\V2010\Account\BalanceList;
 use Twilio\Rest\Api\V2010\Account\CallList;
 use Twilio\Rest\Api\V2010\Account\ConferenceList;
 use Twilio\Rest\Api\V2010\Account\ConnectAppList;
@@ -28,7 +30,6 @@ use Twilio\Rest\Api\V2010\Account\NotificationList;
 use Twilio\Rest\Api\V2010\Account\OutgoingCallerIdList;
 use Twilio\Rest\Api\V2010\Account\QueueList;
 use Twilio\Rest\Api\V2010\Account\RecordingList;
-use Twilio\Rest\Api\V2010\Account\SandboxList;
 use Twilio\Rest\Api\V2010\Account\ShortCodeList;
 use Twilio\Rest\Api\V2010\Account\SigningKeyList;
 use Twilio\Rest\Api\V2010\Account\SipList;
@@ -40,30 +41,30 @@ use Twilio\Values;
 use Twilio\Version;
 
 /**
- * @property \Twilio\Rest\Api\V2010\Account\AddressList addresses
- * @property \Twilio\Rest\Api\V2010\Account\ApplicationList applications
- * @property \Twilio\Rest\Api\V2010\Account\AuthorizedConnectAppList authorizedConnectApps
- * @property \Twilio\Rest\Api\V2010\Account\AvailablePhoneNumberCountryList availablePhoneNumbers
- * @property \Twilio\Rest\Api\V2010\Account\CallList calls
- * @property \Twilio\Rest\Api\V2010\Account\ConferenceList conferences
- * @property \Twilio\Rest\Api\V2010\Account\ConnectAppList connectApps
- * @property \Twilio\Rest\Api\V2010\Account\IncomingPhoneNumberList incomingPhoneNumbers
- * @property \Twilio\Rest\Api\V2010\Account\KeyList keys
- * @property \Twilio\Rest\Api\V2010\Account\MessageList messages
- * @property \Twilio\Rest\Api\V2010\Account\NewKeyList newKeys
- * @property \Twilio\Rest\Api\V2010\Account\NewSigningKeyList newSigningKeys
- * @property \Twilio\Rest\Api\V2010\Account\NotificationList notifications
- * @property \Twilio\Rest\Api\V2010\Account\OutgoingCallerIdList outgoingCallerIds
- * @property \Twilio\Rest\Api\V2010\Account\QueueList queues
- * @property \Twilio\Rest\Api\V2010\Account\RecordingList recordings
- * @property \Twilio\Rest\Api\V2010\Account\SandboxList sandbox
- * @property \Twilio\Rest\Api\V2010\Account\SigningKeyList signingKeys
- * @property \Twilio\Rest\Api\V2010\Account\SipList sip
- * @property \Twilio\Rest\Api\V2010\Account\ShortCodeList shortCodes
- * @property \Twilio\Rest\Api\V2010\Account\TokenList tokens
- * @property \Twilio\Rest\Api\V2010\Account\TranscriptionList transcriptions
- * @property \Twilio\Rest\Api\V2010\Account\UsageList usage
- * @property \Twilio\Rest\Api\V2010\Account\ValidationRequestList validationRequests
+ * @property AddressList $addresses
+ * @property ApplicationList $applications
+ * @property AuthorizedConnectAppList $authorizedConnectApps
+ * @property AvailablePhoneNumberCountryList $availablePhoneNumbers
+ * @property BalanceList $balance
+ * @property CallList $calls
+ * @property ConferenceList $conferences
+ * @property ConnectAppList $connectApps
+ * @property IncomingPhoneNumberList $incomingPhoneNumbers
+ * @property KeyList $keys
+ * @property MessageList $messages
+ * @property NewKeyList $newKeys
+ * @property NewSigningKeyList $newSigningKeys
+ * @property NotificationList $notifications
+ * @property OutgoingCallerIdList $outgoingCallerIds
+ * @property QueueList $queues
+ * @property RecordingList $recordings
+ * @property SigningKeyList $signingKeys
+ * @property SipList $sip
+ * @property ShortCodeList $shortCodes
+ * @property TokenList $tokens
+ * @property TranscriptionList $transcriptions
+ * @property UsageList $usage
+ * @property ValidationRequestList $validationRequests
  * @method \Twilio\Rest\Api\V2010\Account\AddressContext addresses(string $sid)
  * @method \Twilio\Rest\Api\V2010\Account\ApplicationContext applications(string $sid)
  * @method \Twilio\Rest\Api\V2010\Account\AuthorizedConnectAppContext authorizedConnectApps(string $connectAppSid)
@@ -78,531 +79,393 @@ use Twilio\Version;
  * @method \Twilio\Rest\Api\V2010\Account\OutgoingCallerIdContext outgoingCallerIds(string $sid)
  * @method \Twilio\Rest\Api\V2010\Account\QueueContext queues(string $sid)
  * @method \Twilio\Rest\Api\V2010\Account\RecordingContext recordings(string $sid)
- * @method \Twilio\Rest\Api\V2010\Account\SandboxContext sandbox()
  * @method \Twilio\Rest\Api\V2010\Account\SigningKeyContext signingKeys(string $sid)
  * @method \Twilio\Rest\Api\V2010\Account\ShortCodeContext shortCodes(string $sid)
  * @method \Twilio\Rest\Api\V2010\Account\TranscriptionContext transcriptions(string $sid)
  */
 class AccountContext extends InstanceContext {
-    protected $_addresses = null;
-    protected $_applications = null;
-    protected $_authorizedConnectApps = null;
-    protected $_availablePhoneNumbers = null;
-    protected $_calls = null;
-    protected $_conferences = null;
-    protected $_connectApps = null;
-    protected $_incomingPhoneNumbers = null;
-    protected $_keys = null;
-    protected $_messages = null;
-    protected $_newKeys = null;
-    protected $_newSigningKeys = null;
-    protected $_notifications = null;
-    protected $_outgoingCallerIds = null;
-    protected $_queues = null;
-    protected $_recordings = null;
-    protected $_sandbox = null;
-    protected $_signingKeys = null;
-    protected $_sip = null;
-    protected $_shortCodes = null;
-    protected $_tokens = null;
-    protected $_transcriptions = null;
-    protected $_usage = null;
-    protected $_validationRequests = null;
+    protected $_addresses;
+    protected $_applications;
+    protected $_authorizedConnectApps;
+    protected $_availablePhoneNumbers;
+    protected $_balance;
+    protected $_calls;
+    protected $_conferences;
+    protected $_connectApps;
+    protected $_incomingPhoneNumbers;
+    protected $_keys;
+    protected $_messages;
+    protected $_newKeys;
+    protected $_newSigningKeys;
+    protected $_notifications;
+    protected $_outgoingCallerIds;
+    protected $_queues;
+    protected $_recordings;
+    protected $_signingKeys;
+    protected $_sip;
+    protected $_shortCodes;
+    protected $_tokens;
+    protected $_transcriptions;
+    protected $_usage;
+    protected $_validationRequests;
 
     /**
      * Initialize the AccountContext
-     * 
-     * @param \Twilio\Version $version Version that contains the resource
+     *
+     * @param Version $version Version that contains the resource
      * @param string $sid Fetch by unique Account Sid
-     * @return \Twilio\Rest\Api\V2010\AccountContext 
      */
     public function __construct(Version $version, $sid) {
         parent::__construct($version);
-        
+
         // Path Solution
-        $this->solution = array(
-            'sid' => $sid,
-        );
-        
-        $this->uri = '/Accounts/' . $sid . '.json';
+        $this->solution = ['sid' => $sid, ];
+
+        $this->uri = '/Accounts/' . \rawurlencode($sid) . '.json';
     }
 
     /**
-     * Fetch a AccountInstance
-     * 
+     * Fetch the AccountInstance
+     *
      * @return AccountInstance Fetched AccountInstance
+     * @throws TwilioException When an HTTP error occurs.
      */
-    public function fetch() {
-        $params = Values::of(array());
-        
-        $payload = $this->version->fetch(
-            'GET',
-            $this->uri,
-            $params
-        );
-        
-        return new AccountInstance(
-            $this->version,
-            $payload,
-            $this->solution['sid']
-        );
+    public function fetch(): AccountInstance {
+        $payload = $this->version->fetch('GET', $this->uri);
+
+        return new AccountInstance($this->version, $payload, $this->solution['sid']);
     }
 
     /**
      * Update the AccountInstance
-     * 
+     *
      * @param array|Options $options Optional Arguments
      * @return AccountInstance Updated AccountInstance
+     * @throws TwilioException When an HTTP error occurs.
      */
-    public function update($options = array()) {
+    public function update(array $options = []): AccountInstance {
         $options = new Values($options);
-        
-        $data = Values::of(array(
-            'FriendlyName' => $options['friendlyName'],
-            'Status' => $options['status'],
-        ));
-        
-        $payload = $this->version->update(
-            'POST',
-            $this->uri,
-            array(),
-            $data
-        );
-        
-        return new AccountInstance(
-            $this->version,
-            $payload,
-            $this->solution['sid']
-        );
+
+        $data = Values::of(['FriendlyName' => $options['friendlyName'], 'Status' => $options['status'], ]);
+
+        $payload = $this->version->update('POST', $this->uri, [], $data);
+
+        return new AccountInstance($this->version, $payload, $this->solution['sid']);
     }
 
     /**
      * Access the addresses
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\AddressList 
      */
-    protected function getAddresses() {
+    protected function getAddresses(): AddressList {
         if (!$this->_addresses) {
-            $this->_addresses = new AddressList(
-                $this->version,
-                $this->solution['sid']
-            );
+            $this->_addresses = new AddressList($this->version, $this->solution['sid']);
         }
-        
+
         return $this->_addresses;
     }
 
     /**
      * Access the applications
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\ApplicationList 
      */
-    protected function getApplications() {
+    protected function getApplications(): ApplicationList {
         if (!$this->_applications) {
-            $this->_applications = new ApplicationList(
-                $this->version,
-                $this->solution['sid']
-            );
+            $this->_applications = new ApplicationList($this->version, $this->solution['sid']);
         }
-        
+
         return $this->_applications;
     }
 
     /**
      * Access the authorizedConnectApps
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\AuthorizedConnectAppList 
      */
-    protected function getAuthorizedConnectApps() {
+    protected function getAuthorizedConnectApps(): AuthorizedConnectAppList {
         if (!$this->_authorizedConnectApps) {
             $this->_authorizedConnectApps = new AuthorizedConnectAppList(
                 $this->version,
                 $this->solution['sid']
             );
         }
-        
+
         return $this->_authorizedConnectApps;
     }
 
     /**
      * Access the availablePhoneNumbers
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\AvailablePhoneNumberCountryList 
      */
-    protected function getAvailablePhoneNumbers() {
+    protected function getAvailablePhoneNumbers(): AvailablePhoneNumberCountryList {
         if (!$this->_availablePhoneNumbers) {
             $this->_availablePhoneNumbers = new AvailablePhoneNumberCountryList(
                 $this->version,
                 $this->solution['sid']
             );
         }
-        
+
         return $this->_availablePhoneNumbers;
     }
 
     /**
-     * Access the calls
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\CallList 
+     * Access the balance
      */
-    protected function getCalls() {
-        if (!$this->_calls) {
-            $this->_calls = new CallList(
-                $this->version,
-                $this->solution['sid']
-            );
+    protected function getBalance(): BalanceList {
+        if (!$this->_balance) {
+            $this->_balance = new BalanceList($this->version, $this->solution['sid']);
         }
-        
+
+        return $this->_balance;
+    }
+
+    /**
+     * Access the calls
+     */
+    protected function getCalls(): CallList {
+        if (!$this->_calls) {
+            $this->_calls = new CallList($this->version, $this->solution['sid']);
+        }
+
         return $this->_calls;
     }
 
     /**
      * Access the conferences
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\ConferenceList 
      */
-    protected function getConferences() {
+    protected function getConferences(): ConferenceList {
         if (!$this->_conferences) {
-            $this->_conferences = new ConferenceList(
-                $this->version,
-                $this->solution['sid']
-            );
+            $this->_conferences = new ConferenceList($this->version, $this->solution['sid']);
         }
-        
+
         return $this->_conferences;
     }
 
     /**
      * Access the connectApps
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\ConnectAppList 
      */
-    protected function getConnectApps() {
+    protected function getConnectApps(): ConnectAppList {
         if (!$this->_connectApps) {
-            $this->_connectApps = new ConnectAppList(
-                $this->version,
-                $this->solution['sid']
-            );
+            $this->_connectApps = new ConnectAppList($this->version, $this->solution['sid']);
         }
-        
+
         return $this->_connectApps;
     }
 
     /**
      * Access the incomingPhoneNumbers
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\IncomingPhoneNumberList 
      */
-    protected function getIncomingPhoneNumbers() {
+    protected function getIncomingPhoneNumbers(): IncomingPhoneNumberList {
         if (!$this->_incomingPhoneNumbers) {
-            $this->_incomingPhoneNumbers = new IncomingPhoneNumberList(
-                $this->version,
-                $this->solution['sid']
-            );
+            $this->_incomingPhoneNumbers = new IncomingPhoneNumberList($this->version, $this->solution['sid']);
         }
-        
+
         return $this->_incomingPhoneNumbers;
     }
 
     /**
      * Access the keys
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\KeyList 
      */
-    protected function getKeys() {
+    protected function getKeys(): KeyList {
         if (!$this->_keys) {
-            $this->_keys = new KeyList(
-                $this->version,
-                $this->solution['sid']
-            );
+            $this->_keys = new KeyList($this->version, $this->solution['sid']);
         }
-        
+
         return $this->_keys;
     }
 
     /**
      * Access the messages
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\MessageList 
      */
-    protected function getMessages() {
+    protected function getMessages(): MessageList {
         if (!$this->_messages) {
-            $this->_messages = new MessageList(
-                $this->version,
-                $this->solution['sid']
-            );
+            $this->_messages = new MessageList($this->version, $this->solution['sid']);
         }
-        
+
         return $this->_messages;
     }
 
     /**
      * Access the newKeys
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\NewKeyList 
      */
-    protected function getNewKeys() {
+    protected function getNewKeys(): NewKeyList {
         if (!$this->_newKeys) {
-            $this->_newKeys = new NewKeyList(
-                $this->version,
-                $this->solution['sid']
-            );
+            $this->_newKeys = new NewKeyList($this->version, $this->solution['sid']);
         }
-        
+
         return $this->_newKeys;
     }
 
     /**
      * Access the newSigningKeys
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\NewSigningKeyList 
      */
-    protected function getNewSigningKeys() {
+    protected function getNewSigningKeys(): NewSigningKeyList {
         if (!$this->_newSigningKeys) {
-            $this->_newSigningKeys = new NewSigningKeyList(
-                $this->version,
-                $this->solution['sid']
-            );
+            $this->_newSigningKeys = new NewSigningKeyList($this->version, $this->solution['sid']);
         }
-        
+
         return $this->_newSigningKeys;
     }
 
     /**
      * Access the notifications
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\NotificationList 
      */
-    protected function getNotifications() {
+    protected function getNotifications(): NotificationList {
         if (!$this->_notifications) {
-            $this->_notifications = new NotificationList(
-                $this->version,
-                $this->solution['sid']
-            );
+            $this->_notifications = new NotificationList($this->version, $this->solution['sid']);
         }
-        
+
         return $this->_notifications;
     }
 
     /**
      * Access the outgoingCallerIds
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\OutgoingCallerIdList 
      */
-    protected function getOutgoingCallerIds() {
+    protected function getOutgoingCallerIds(): OutgoingCallerIdList {
         if (!$this->_outgoingCallerIds) {
-            $this->_outgoingCallerIds = new OutgoingCallerIdList(
-                $this->version,
-                $this->solution['sid']
-            );
+            $this->_outgoingCallerIds = new OutgoingCallerIdList($this->version, $this->solution['sid']);
         }
-        
+
         return $this->_outgoingCallerIds;
     }
 
     /**
      * Access the queues
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\QueueList 
      */
-    protected function getQueues() {
+    protected function getQueues(): QueueList {
         if (!$this->_queues) {
-            $this->_queues = new QueueList(
-                $this->version,
-                $this->solution['sid']
-            );
+            $this->_queues = new QueueList($this->version, $this->solution['sid']);
         }
-        
+
         return $this->_queues;
     }
 
     /**
      * Access the recordings
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\RecordingList 
      */
-    protected function getRecordings() {
+    protected function getRecordings(): RecordingList {
         if (!$this->_recordings) {
-            $this->_recordings = new RecordingList(
-                $this->version,
-                $this->solution['sid']
-            );
+            $this->_recordings = new RecordingList($this->version, $this->solution['sid']);
         }
-        
+
         return $this->_recordings;
     }
 
     /**
-     * Access the sandbox
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\SandboxList 
-     */
-    protected function getSandbox() {
-        if (!$this->_sandbox) {
-            $this->_sandbox = new SandboxList(
-                $this->version,
-                $this->solution['sid']
-            );
-        }
-        
-        return $this->_sandbox;
-    }
-
-    /**
      * Access the signingKeys
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\SigningKeyList 
      */
-    protected function getSigningKeys() {
+    protected function getSigningKeys(): SigningKeyList {
         if (!$this->_signingKeys) {
-            $this->_signingKeys = new SigningKeyList(
-                $this->version,
-                $this->solution['sid']
-            );
+            $this->_signingKeys = new SigningKeyList($this->version, $this->solution['sid']);
         }
-        
+
         return $this->_signingKeys;
     }
 
     /**
      * Access the sip
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\SipList 
      */
-    protected function getSip() {
+    protected function getSip(): SipList {
         if (!$this->_sip) {
-            $this->_sip = new SipList(
-                $this->version,
-                $this->solution['sid']
-            );
+            $this->_sip = new SipList($this->version, $this->solution['sid']);
         }
-        
+
         return $this->_sip;
     }
 
     /**
      * Access the shortCodes
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\ShortCodeList 
      */
-    protected function getShortCodes() {
+    protected function getShortCodes(): ShortCodeList {
         if (!$this->_shortCodes) {
-            $this->_shortCodes = new ShortCodeList(
-                $this->version,
-                $this->solution['sid']
-            );
+            $this->_shortCodes = new ShortCodeList($this->version, $this->solution['sid']);
         }
-        
+
         return $this->_shortCodes;
     }
 
     /**
      * Access the tokens
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\TokenList 
      */
-    protected function getTokens() {
+    protected function getTokens(): TokenList {
         if (!$this->_tokens) {
-            $this->_tokens = new TokenList(
-                $this->version,
-                $this->solution['sid']
-            );
+            $this->_tokens = new TokenList($this->version, $this->solution['sid']);
         }
-        
+
         return $this->_tokens;
     }
 
     /**
      * Access the transcriptions
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\TranscriptionList 
      */
-    protected function getTranscriptions() {
+    protected function getTranscriptions(): TranscriptionList {
         if (!$this->_transcriptions) {
-            $this->_transcriptions = new TranscriptionList(
-                $this->version,
-                $this->solution['sid']
-            );
+            $this->_transcriptions = new TranscriptionList($this->version, $this->solution['sid']);
         }
-        
+
         return $this->_transcriptions;
     }
 
     /**
      * Access the usage
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\UsageList 
      */
-    protected function getUsage() {
+    protected function getUsage(): UsageList {
         if (!$this->_usage) {
-            $this->_usage = new UsageList(
-                $this->version,
-                $this->solution['sid']
-            );
+            $this->_usage = new UsageList($this->version, $this->solution['sid']);
         }
-        
+
         return $this->_usage;
     }
 
     /**
      * Access the validationRequests
-     * 
-     * @return \Twilio\Rest\Api\V2010\Account\ValidationRequestList 
      */
-    protected function getValidationRequests() {
+    protected function getValidationRequests(): ValidationRequestList {
         if (!$this->_validationRequests) {
-            $this->_validationRequests = new ValidationRequestList(
-                $this->version,
-                $this->solution['sid']
-            );
+            $this->_validationRequests = new ValidationRequestList($this->version, $this->solution['sid']);
         }
-        
+
         return $this->_validationRequests;
     }
 
     /**
      * Magic getter to lazy load subresources
-     * 
+     *
      * @param string $name Subresource to return
-     * @return \Twilio\ListResource The requested subresource
-     * @throws \Twilio\Exceptions\TwilioException For unknown subresources
+     * @return ListResource The requested subresource
+     * @throws TwilioException For unknown subresources
      */
-    public function __get($name) {
-        if (property_exists($this, '_' . $name)) {
-            $method = 'get' . ucfirst($name);
+    public function __get(string $name): ListResource {
+        if (\property_exists($this, '_' . $name)) {
+            $method = 'get' . \ucfirst($name);
             return $this->$method();
         }
-        
+
         throw new TwilioException('Unknown subresource ' . $name);
     }
 
     /**
      * Magic caller to get resource contexts
-     * 
+     *
      * @param string $name Resource to return
      * @param array $arguments Context parameters
-     * @return \Twilio\InstanceContext The requested resource context
-     * @throws \Twilio\Exceptions\TwilioException For unknown resource
+     * @return InstanceContext The requested resource context
+     * @throws TwilioException For unknown resource
      */
-    public function __call($name, $arguments) {
+    public function __call(string $name, array $arguments): InstanceContext {
         $property = $this->$name;
-        if (method_exists($property, 'getContext')) {
-            return call_user_func_array(array($property, 'getContext'), $arguments);
+        if (\method_exists($property, 'getContext')) {
+            return \call_user_func_array(array($property, 'getContext'), $arguments);
         }
-        
+
         throw new TwilioException('Resource does not have a context');
     }
 
     /**
      * Provide a friendly representation
-     * 
+     *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $context = array();
+    public function __toString(): string {
+        $context = [];
         foreach ($this->solution as $key => $value) {
             $context[] = "$key=$value";
         }
-        return '[Twilio.Api.V2010.AccountContext ' . implode(' ', $context) . ']';
+        return '[Twilio.Api.V2010.AccountContext ' . \implode(' ', $context) . ']';
     }
 }

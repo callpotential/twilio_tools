@@ -9,28 +9,27 @@
 
 namespace Twilio\Rest\Api\V2010\Account;
 
+use Twilio\Exceptions\TwilioException;
 use Twilio\ListResource;
 use Twilio\Options;
+use Twilio\Stream;
 use Twilio\Values;
 use Twilio\Version;
 
 class QueueList extends ListResource {
     /**
      * Construct the QueueList
-     * 
+     *
      * @param Version $version Version that contains the resource
-     * @param string $accountSid The account_sid
-     * @return \Twilio\Rest\Api\V2010\Account\QueueList 
+     * @param string $accountSid The SID of the Account that created this resource
      */
-    public function __construct(Version $version, $accountSid) {
+    public function __construct(Version $version, string $accountSid) {
         parent::__construct($version);
-        
+
         // Path Solution
-        $this->solution = array(
-            'accountSid' => $accountSid,
-        );
-        
-        $this->uri = '/Accounts/' . $accountSid . '/Queues.json';
+        $this->solution = ['accountSid' => $accountSid, ];
+
+        $this->uri = '/Accounts/' . \rawurlencode($accountSid) . '/Queues.json';
     }
 
     /**
@@ -40,7 +39,7 @@ class QueueList extends ListResource {
      * is reached.
      * The results are returned as a generator, so this operation is memory
      * efficient.
-     * 
+     *
      * @param int $limit Upper limit for the number of records to return. stream()
      *                   guarantees to never return more than limit.  Default is no
      *                   limit
@@ -49,13 +48,13 @@ class QueueList extends ListResource {
      *                        page_size is defined but a limit is defined, stream()
      *                        will attempt to read the limit with the most
      *                        efficient page size, i.e. min(limit, 1000)
-     * @return \Twilio\Stream stream of results
+     * @return Stream stream of results
      */
-    public function stream($limit = null, $pageSize = null) {
+    public function stream(int $limit = null, $pageSize = null): Stream {
         $limits = $this->version->readLimits($limit, $pageSize);
-        
+
         $page = $this->page($limits['pageSize']);
-        
+
         return $this->version->stream($page, $limits['limit'], $limits['pageLimit']);
     }
 
@@ -63,7 +62,7 @@ class QueueList extends ListResource {
      * Reads QueueInstance records from the API as a list.
      * Unlike stream(), this operation is eager and will load `limit` records into
      * memory before returning.
-     * 
+     *
      * @param int $limit Upper limit for the number of records to return. read()
      *                   guarantees to never return more than limit.  Default is no
      *                   limit
@@ -74,83 +73,76 @@ class QueueList extends ListResource {
      *                        efficient page size, i.e. min(limit, 1000)
      * @return QueueInstance[] Array of results
      */
-    public function read($limit = null, $pageSize = Values::NONE) {
-        return iterator_to_array($this->stream($limit, $pageSize), false);
+    public function read(int $limit = null, $pageSize = null): array {
+        return \iterator_to_array($this->stream($limit, $pageSize), false);
     }
 
     /**
      * Retrieve a single page of QueueInstance records from the API.
      * Request is executed immediately
-     * 
+     *
      * @param mixed $pageSize Number of records to return, defaults to 50
      * @param string $pageToken PageToken provided by the API
      * @param mixed $pageNumber Page Number, this value is simply for client state
-     * @return \Twilio\Page Page of QueueInstance
+     * @return QueuePage Page of QueueInstance
      */
-    public function page($pageSize = Values::NONE, $pageToken = Values::NONE, $pageNumber = Values::NONE) {
-        $params = Values::of(array(
-            'PageToken' => $pageToken,
-            'Page' => $pageNumber,
-            'PageSize' => $pageSize,
-        ));
-        
-        $response = $this->version->page(
-            'GET',
-            $this->uri,
-            $params
-        );
-        
+    public function page($pageSize = Values::NONE, string $pageToken = Values::NONE, $pageNumber = Values::NONE): QueuePage {
+        $params = Values::of(['PageToken' => $pageToken, 'Page' => $pageNumber, 'PageSize' => $pageSize, ]);
+
+        $response = $this->version->page('GET', $this->uri, $params);
+
         return new QueuePage($this->version, $response, $this->solution);
     }
 
     /**
-     * Create a new QueueInstance
-     * 
-     * @param array|Options $options Optional Arguments
-     * @return QueueInstance Newly created QueueInstance
+     * Retrieve a specific page of QueueInstance records from the API.
+     * Request is executed immediately
+     *
+     * @param string $targetUrl API-generated URL for the requested results page
+     * @return QueuePage Page of QueueInstance
      */
-    public function create($options = array()) {
+    public function getPage(string $targetUrl): QueuePage {
+        $response = $this->version->getDomain()->getClient()->request(
+            'GET',
+            $targetUrl
+        );
+
+        return new QueuePage($this->version, $response, $this->solution);
+    }
+
+    /**
+     * Create the QueueInstance
+     *
+     * @param string $friendlyName A string to describe this resource
+     * @param array|Options $options Optional Arguments
+     * @return QueueInstance Created QueueInstance
+     * @throws TwilioException When an HTTP error occurs.
+     */
+    public function create(string $friendlyName, array $options = []): QueueInstance {
         $options = new Values($options);
-        
-        $data = Values::of(array(
-            'FriendlyName' => $options['friendlyName'],
-            'MaxSize' => $options['maxSize'],
-        ));
-        
-        $payload = $this->version->create(
-            'POST',
-            $this->uri,
-            array(),
-            $data
-        );
-        
-        return new QueueInstance(
-            $this->version,
-            $payload,
-            $this->solution['accountSid']
-        );
+
+        $data = Values::of(['FriendlyName' => $friendlyName, 'MaxSize' => $options['maxSize'], ]);
+
+        $payload = $this->version->create('POST', $this->uri, [], $data);
+
+        return new QueueInstance($this->version, $payload, $this->solution['accountSid']);
     }
 
     /**
      * Constructs a QueueContext
-     * 
-     * @param string $sid Fetch by unique queue Sid
-     * @return \Twilio\Rest\Api\V2010\Account\QueueContext 
+     *
+     * @param string $sid The unique string that identifies this resource
      */
-    public function getContext($sid) {
-        return new QueueContext(
-            $this->version,
-            $this->solution['accountSid'],
-            $sid
-        );
+    public function getContext(string $sid): QueueContext {
+        return new QueueContext($this->version, $this->solution['accountSid'], $sid);
     }
 
     /**
      * Provide a friendly representation
-     * 
+     *
      * @return string Machine friendly representation
      */
-    public function __toString() {
+    public function __toString(): string {
         return '[Twilio.Api.V2010.QueueList]';
     }
 }

@@ -14,73 +14,114 @@ use Twilio\Values;
 
 abstract class WorkflowStatisticsOptions {
     /**
-     * @param string $minutes The minutes
-     * @param \DateTime $startDate The start_date
-     * @param \DateTime $endDate The end_date
+     * @param int $minutes Only calculate statistics since this many minutes in the
+     *                     past
+     * @param \DateTime $startDate Only calculate statistics from on or after this
+     *                             date
+     * @param \DateTime $endDate Only calculate statistics from this date and time
+     *                           and earlier
+     * @param string $taskChannel Only calculate real-time statistics on this
+     *                            TaskChannel.
+     * @param string $splitByWaitTime A comma separated list of values that
+     *                                describes the thresholds to calculate
+     *                                statistics on
      * @return FetchWorkflowStatisticsOptions Options builder
      */
-    public static function fetch($minutes = Values::NONE, $startDate = Values::NONE, $endDate = Values::NONE) {
-        return new FetchWorkflowStatisticsOptions($minutes, $startDate, $endDate);
+    public static function fetch(int $minutes = Values::NONE, \DateTime $startDate = Values::NONE, \DateTime $endDate = Values::NONE, string $taskChannel = Values::NONE, string $splitByWaitTime = Values::NONE): FetchWorkflowStatisticsOptions {
+        return new FetchWorkflowStatisticsOptions($minutes, $startDate, $endDate, $taskChannel, $splitByWaitTime);
     }
 }
 
 class FetchWorkflowStatisticsOptions extends Options {
     /**
-     * @param string $minutes The minutes
-     * @param \DateTime $startDate The start_date
-     * @param \DateTime $endDate The end_date
+     * @param int $minutes Only calculate statistics since this many minutes in the
+     *                     past
+     * @param \DateTime $startDate Only calculate statistics from on or after this
+     *                             date
+     * @param \DateTime $endDate Only calculate statistics from this date and time
+     *                           and earlier
+     * @param string $taskChannel Only calculate real-time statistics on this
+     *                            TaskChannel.
+     * @param string $splitByWaitTime A comma separated list of values that
+     *                                describes the thresholds to calculate
+     *                                statistics on
      */
-    public function __construct($minutes = Values::NONE, $startDate = Values::NONE, $endDate = Values::NONE) {
+    public function __construct(int $minutes = Values::NONE, \DateTime $startDate = Values::NONE, \DateTime $endDate = Values::NONE, string $taskChannel = Values::NONE, string $splitByWaitTime = Values::NONE) {
         $this->options['minutes'] = $minutes;
         $this->options['startDate'] = $startDate;
         $this->options['endDate'] = $endDate;
+        $this->options['taskChannel'] = $taskChannel;
+        $this->options['splitByWaitTime'] = $splitByWaitTime;
     }
 
     /**
-     * The minutes
-     * 
-     * @param string $minutes The minutes
+     * Only calculate statistics since this many minutes in the past. The default 15 minutes. This is helpful for displaying statistics for the last 15 minutes, 240 minutes (4 hours), and 480 minutes (8 hours) to see trends.
+     *
+     * @param int $minutes Only calculate statistics since this many minutes in the
+     *                     past
      * @return $this Fluent Builder
      */
-    public function setMinutes($minutes) {
+    public function setMinutes(int $minutes): self {
         $this->options['minutes'] = $minutes;
         return $this;
     }
 
     /**
-     * The start_date
-     * 
-     * @param \DateTime $startDate The start_date
+     * Only calculate statistics from this date and time and later, specified in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
+     *
+     * @param \DateTime $startDate Only calculate statistics from on or after this
+     *                             date
      * @return $this Fluent Builder
      */
-    public function setStartDate($startDate) {
+    public function setStartDate(\DateTime $startDate): self {
         $this->options['startDate'] = $startDate;
         return $this;
     }
 
     /**
-     * The end_date
-     * 
-     * @param \DateTime $endDate The end_date
+     * Only calculate statistics from this date and time and earlier, specified in GMT as an [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) date-time.
+     *
+     * @param \DateTime $endDate Only calculate statistics from this date and time
+     *                           and earlier
      * @return $this Fluent Builder
      */
-    public function setEndDate($endDate) {
+    public function setEndDate(\DateTime $endDate): self {
         $this->options['endDate'] = $endDate;
+        return $this;
+    }
+
+    /**
+     * Only calculate real-time statistics on this TaskChannel. Can be the TaskChannel's SID or its `unique_name`, such as `voice`, `sms`, or `default`.
+     *
+     * @param string $taskChannel Only calculate real-time statistics on this
+     *                            TaskChannel.
+     * @return $this Fluent Builder
+     */
+    public function setTaskChannel(string $taskChannel): self {
+        $this->options['taskChannel'] = $taskChannel;
+        return $this;
+    }
+
+    /**
+     * A comma separated list of values that describes the thresholds, in seconds, to calculate statistics on. For each threshold specified, the number of Tasks canceled and reservations accepted above and below the specified thresholds in seconds are computed. For example, `5,30` would show splits of Tasks that were canceled or accepted before and after 5 seconds and before and after 30 seconds. This can be used to show short abandoned Tasks or Tasks that failed to meet an SLA.
+     *
+     * @param string $splitByWaitTime A comma separated list of values that
+     *                                describes the thresholds to calculate
+     *                                statistics on
+     * @return $this Fluent Builder
+     */
+    public function setSplitByWaitTime(string $splitByWaitTime): self {
+        $this->options['splitByWaitTime'] = $splitByWaitTime;
         return $this;
     }
 
     /**
      * Provide a friendly representation
-     * 
+     *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Taskrouter.V1.FetchWorkflowStatisticsOptions ' . implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Taskrouter.V1.FetchWorkflowStatisticsOptions ' . $options . ']';
     }
 }
