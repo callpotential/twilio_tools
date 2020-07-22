@@ -9,55 +9,50 @@
 
 namespace Twilio\Rest\Api\V2010\Account;
 
+use Twilio\Exceptions\TwilioException;
 use Twilio\InstanceContext;
 use Twilio\Options;
+use Twilio\Serialize;
 use Twilio\Values;
 use Twilio\Version;
 
 class ApplicationContext extends InstanceContext {
     /**
      * Initialize the ApplicationContext
-     * 
-     * @param \Twilio\Version $version Version that contains the resource
-     * @param string $accountSid The account_sid
-     * @param string $sid Fetch by unique Application Sid
-     * @return \Twilio\Rest\Api\V2010\Account\ApplicationContext 
+     *
+     * @param Version $version Version that contains the resource
+     * @param string $accountSid The SID of the Account that created the resource
+     *                           to fetch
+     * @param string $sid The unique string that identifies the resource
      */
     public function __construct(Version $version, $accountSid, $sid) {
         parent::__construct($version);
-        
+
         // Path Solution
-        $this->solution = array(
-            'accountSid' => $accountSid,
-            'sid' => $sid,
-        );
-        
-        $this->uri = '/Accounts/' . $accountSid . '/Applications/' . $sid . '.json';
+        $this->solution = ['accountSid' => $accountSid, 'sid' => $sid, ];
+
+        $this->uri = '/Accounts/' . \rawurlencode($accountSid) . '/Applications/' . \rawurlencode($sid) . '.json';
     }
 
     /**
-     * Deletes the ApplicationInstance
-     * 
-     * @return boolean True if delete succeeds, false otherwise
+     * Delete the ApplicationInstance
+     *
+     * @return bool True if delete succeeds, false otherwise
+     * @throws TwilioException When an HTTP error occurs.
      */
-    public function delete() {
-        return $this->version->delete('delete', $this->uri);
+    public function delete(): bool {
+        return $this->version->delete('DELETE', $this->uri);
     }
 
     /**
-     * Fetch a ApplicationInstance
-     * 
+     * Fetch the ApplicationInstance
+     *
      * @return ApplicationInstance Fetched ApplicationInstance
+     * @throws TwilioException When an HTTP error occurs.
      */
-    public function fetch() {
-        $params = Values::of(array());
-        
-        $payload = $this->version->fetch(
-            'GET',
-            $this->uri,
-            $params
-        );
-        
+    public function fetch(): ApplicationInstance {
+        $payload = $this->version->fetch('GET', $this->uri);
+
         return new ApplicationInstance(
             $this->version,
             $payload,
@@ -68,14 +63,15 @@ class ApplicationContext extends InstanceContext {
 
     /**
      * Update the ApplicationInstance
-     * 
+     *
      * @param array|Options $options Optional Arguments
      * @return ApplicationInstance Updated ApplicationInstance
+     * @throws TwilioException When an HTTP error occurs.
      */
-    public function update($options = array()) {
+    public function update(array $options = []): ApplicationInstance {
         $options = new Values($options);
-        
-        $data = Values::of(array(
+
+        $data = Values::of([
             'FriendlyName' => $options['friendlyName'],
             'ApiVersion' => $options['apiVersion'],
             'VoiceUrl' => $options['voiceUrl'],
@@ -84,22 +80,17 @@ class ApplicationContext extends InstanceContext {
             'VoiceFallbackMethod' => $options['voiceFallbackMethod'],
             'StatusCallback' => $options['statusCallback'],
             'StatusCallbackMethod' => $options['statusCallbackMethod'],
-            'VoiceCallerIdLookup' => $options['voiceCallerIdLookup'],
+            'VoiceCallerIdLookup' => Serialize::booleanToString($options['voiceCallerIdLookup']),
             'SmsUrl' => $options['smsUrl'],
             'SmsMethod' => $options['smsMethod'],
             'SmsFallbackUrl' => $options['smsFallbackUrl'],
             'SmsFallbackMethod' => $options['smsFallbackMethod'],
             'SmsStatusCallback' => $options['smsStatusCallback'],
             'MessageStatusCallback' => $options['messageStatusCallback'],
-        ));
-        
-        $payload = $this->version->update(
-            'POST',
-            $this->uri,
-            array(),
-            $data
-        );
-        
+        ]);
+
+        $payload = $this->version->update('POST', $this->uri, [], $data);
+
         return new ApplicationInstance(
             $this->version,
             $payload,
@@ -110,14 +101,14 @@ class ApplicationContext extends InstanceContext {
 
     /**
      * Provide a friendly representation
-     * 
+     *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $context = array();
+    public function __toString(): string {
+        $context = [];
         foreach ($this->solution as $key => $value) {
             $context[] = "$key=$value";
         }
-        return '[Twilio.Api.V2010.ApplicationContext ' . implode(' ', $context) . ']';
+        return '[Twilio.Api.V2010.ApplicationContext ' . \implode(' ', $context) . ']';
     }
 }

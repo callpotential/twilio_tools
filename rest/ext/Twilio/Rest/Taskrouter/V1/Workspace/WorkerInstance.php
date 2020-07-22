@@ -13,67 +13,74 @@ use Twilio\Deserialize;
 use Twilio\Exceptions\TwilioException;
 use Twilio\InstanceResource;
 use Twilio\Options;
+use Twilio\Rest\Taskrouter\V1\Workspace\Worker\ReservationList;
+use Twilio\Rest\Taskrouter\V1\Workspace\Worker\WorkerChannelList;
+use Twilio\Rest\Taskrouter\V1\Workspace\Worker\WorkerStatisticsList;
+use Twilio\Rest\Taskrouter\V1\Workspace\Worker\WorkersCumulativeStatisticsList;
+use Twilio\Rest\Taskrouter\V1\Workspace\Worker\WorkersRealTimeStatisticsList;
+use Twilio\Values;
 use Twilio\Version;
 
 /**
- * @property string accountSid
- * @property string activityName
- * @property string activitySid
- * @property string attributes
- * @property string available
- * @property \DateTime dateCreated
- * @property \DateTime dateStatusChanged
- * @property \DateTime dateUpdated
- * @property string friendlyName
- * @property string sid
- * @property string workspaceSid
+ * @property string $accountSid
+ * @property string $activityName
+ * @property string $activitySid
+ * @property string $attributes
+ * @property bool $available
+ * @property \DateTime $dateCreated
+ * @property \DateTime $dateStatusChanged
+ * @property \DateTime $dateUpdated
+ * @property string $friendlyName
+ * @property string $sid
+ * @property string $workspaceSid
+ * @property string $url
+ * @property array $links
  */
 class WorkerInstance extends InstanceResource {
-    protected $_statistics = null;
-    protected $_reservations = null;
-    protected $_workerChannels = null;
+    protected $_realTimeStatistics;
+    protected $_cumulativeStatistics;
+    protected $_statistics;
+    protected $_reservations;
+    protected $_workerChannels;
 
     /**
      * Initialize the WorkerInstance
-     * 
-     * @param \Twilio\Version $version Version that contains the resource
+     *
+     * @param Version $version Version that contains the resource
      * @param mixed[] $payload The response payload
-     * @param string $workspaceSid The workspace_sid
-     * @param string $sid The sid
-     * @return \Twilio\Rest\Taskrouter\V1\Workspace\WorkerInstance 
+     * @param string $workspaceSid The SID of the Workspace that contains the Worker
+     * @param string $sid The SID of the resource to fetch
      */
-    public function __construct(Version $version, array $payload, $workspaceSid, $sid = null) {
+    public function __construct(Version $version, array $payload, string $workspaceSid, string $sid = null) {
         parent::__construct($version);
-        
+
         // Marshaled Properties
-        $this->properties = array(
-            'accountSid' => $payload['account_sid'],
-            'activityName' => $payload['activity_name'],
-            'activitySid' => $payload['activity_sid'],
-            'attributes' => $payload['attributes'],
-            'available' => $payload['available'],
-            'dateCreated' => Deserialize::iso8601DateTime($payload['date_created']),
-            'dateStatusChanged' => Deserialize::iso8601DateTime($payload['date_status_changed']),
-            'dateUpdated' => Deserialize::iso8601DateTime($payload['date_updated']),
-            'friendlyName' => $payload['friendly_name'],
-            'sid' => $payload['sid'],
-            'workspaceSid' => $payload['workspace_sid'],
-        );
-        
-        $this->solution = array(
-            'workspaceSid' => $workspaceSid,
-            'sid' => $sid ?: $this->properties['sid'],
-        );
+        $this->properties = [
+            'accountSid' => Values::array_get($payload, 'account_sid'),
+            'activityName' => Values::array_get($payload, 'activity_name'),
+            'activitySid' => Values::array_get($payload, 'activity_sid'),
+            'attributes' => Values::array_get($payload, 'attributes'),
+            'available' => Values::array_get($payload, 'available'),
+            'dateCreated' => Deserialize::dateTime(Values::array_get($payload, 'date_created')),
+            'dateStatusChanged' => Deserialize::dateTime(Values::array_get($payload, 'date_status_changed')),
+            'dateUpdated' => Deserialize::dateTime(Values::array_get($payload, 'date_updated')),
+            'friendlyName' => Values::array_get($payload, 'friendly_name'),
+            'sid' => Values::array_get($payload, 'sid'),
+            'workspaceSid' => Values::array_get($payload, 'workspace_sid'),
+            'url' => Values::array_get($payload, 'url'),
+            'links' => Values::array_get($payload, 'links'),
+        ];
+
+        $this->solution = ['workspaceSid' => $workspaceSid, 'sid' => $sid ?: $this->properties['sid'], ];
     }
 
     /**
      * Generate an instance context for the instance, the context is capable of
      * performing various actions.  All instance actions are proxied to the context
-     * 
-     * @return \Twilio\Rest\Taskrouter\V1\Workspace\WorkerContext Context for this
-     *                                                            WorkerInstance
+     *
+     * @return WorkerContext Context for this WorkerInstance
      */
-    protected function proxy() {
+    protected function proxy(): WorkerContext {
         if (!$this->context) {
             $this->context = new WorkerContext(
                 $this->version,
@@ -81,97 +88,106 @@ class WorkerInstance extends InstanceResource {
                 $this->solution['sid']
             );
         }
-        
+
         return $this->context;
     }
 
     /**
-     * Fetch a WorkerInstance
-     * 
+     * Fetch the WorkerInstance
+     *
      * @return WorkerInstance Fetched WorkerInstance
+     * @throws TwilioException When an HTTP error occurs.
      */
-    public function fetch() {
+    public function fetch(): WorkerInstance {
         return $this->proxy()->fetch();
     }
 
     /**
      * Update the WorkerInstance
-     * 
+     *
      * @param array|Options $options Optional Arguments
      * @return WorkerInstance Updated WorkerInstance
+     * @throws TwilioException When an HTTP error occurs.
      */
-    public function update($options = array()) {
-        return $this->proxy()->update(
-            $options
-        );
+    public function update(array $options = []): WorkerInstance {
+        return $this->proxy()->update($options);
     }
 
     /**
-     * Deletes the WorkerInstance
-     * 
-     * @return boolean True if delete succeeds, false otherwise
+     * Delete the WorkerInstance
+     *
+     * @return bool True if delete succeeds, false otherwise
+     * @throws TwilioException When an HTTP error occurs.
      */
-    public function delete() {
+    public function delete(): bool {
         return $this->proxy()->delete();
     }
 
     /**
-     * Access the statistics
-     * 
-     * @return \Twilio\Rest\Taskrouter\V1\Workspace\Worker\WorkerStatisticsList 
+     * Access the realTimeStatistics
      */
-    protected function getStatistics() {
+    protected function getRealTimeStatistics(): WorkersRealTimeStatisticsList {
+        return $this->proxy()->realTimeStatistics;
+    }
+
+    /**
+     * Access the cumulativeStatistics
+     */
+    protected function getCumulativeStatistics(): WorkersCumulativeStatisticsList {
+        return $this->proxy()->cumulativeStatistics;
+    }
+
+    /**
+     * Access the statistics
+     */
+    protected function getStatistics(): WorkerStatisticsList {
         return $this->proxy()->statistics;
     }
 
     /**
      * Access the reservations
-     * 
-     * @return \Twilio\Rest\Taskrouter\V1\Workspace\Worker\ReservationList 
      */
-    protected function getReservations() {
+    protected function getReservations(): ReservationList {
         return $this->proxy()->reservations;
     }
 
     /**
      * Access the workerChannels
-     * 
-     * @return \Twilio\Rest\Taskrouter\V1\Workspace\Worker\WorkerChannelList 
      */
-    protected function getWorkerChannels() {
+    protected function getWorkerChannels(): WorkerChannelList {
         return $this->proxy()->workerChannels;
     }
 
     /**
      * Magic getter to access properties
-     * 
+     *
      * @param string $name Property to access
      * @return mixed The requested property
      * @throws TwilioException For unknown properties
      */
-    public function __get($name) {
-        if (array_key_exists($name, $this->properties)) {
+    public function __get(string $name) {
+        if (\array_key_exists($name, $this->properties)) {
             return $this->properties[$name];
         }
-        
-        if (property_exists($this, '_' . $name)) {
-            $method = 'get' . ucfirst($name);
+
+        if (\property_exists($this, '_' . $name)) {
+            $method = 'get' . \ucfirst($name);
             return $this->$method();
         }
-        
+
         throw new TwilioException('Unknown property: ' . $name);
     }
 
     /**
      * Provide a friendly representation
-     * 
+     *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $context = array();
+    public function __toString(): string {
+        $context = [];
         foreach ($this->solution as $key => $value) {
             $context[] = "$key=$value";
         }
-        return '[Twilio.Taskrouter.V1.WorkerInstance ' . implode(' ', $context) . ']';
+        return '[Twilio.Taskrouter.V1.WorkerInstance ' . \implode(' ', $context) . ']';
     }
 }

@@ -9,7 +9,7 @@ class SubAccounts
             $client = new Twilio\Rest\Client($sid, $token);
             $pageSize = 30;
             $result = array();
-            $page = $client->accounts->page(array(), $pageSize, null, $pageNum);
+            $page = $client->api->v2010->accounts->page(array(), $pageSize, 1, $pageNum);
             foreach ($page as $key => $account) {
                 if ($sid !== $account->sid) {
                     $result[] = array(

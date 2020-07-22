@@ -9,58 +9,51 @@
 
 namespace Twilio\Rest\IpMessaging\V1\Service;
 
+use Twilio\Exceptions\TwilioException;
 use Twilio\ListResource;
 use Twilio\Options;
+use Twilio\Serialize;
+use Twilio\Stream;
 use Twilio\Values;
 use Twilio\Version;
 
 class ChannelList extends ListResource {
     /**
      * Construct the ChannelList
-     * 
+     *
      * @param Version $version Version that contains the resource
-     * @param string $serviceSid The service_sid
-     * @return \Twilio\Rest\IpMessaging\V1\Service\ChannelList 
+     * @param string $serviceSid The SID of the Service that the resource is
+     *                           associated with
      */
-    public function __construct(Version $version, $serviceSid) {
+    public function __construct(Version $version, string $serviceSid) {
         parent::__construct($version);
-        
+
         // Path Solution
-        $this->solution = array(
-            'serviceSid' => $serviceSid,
-        );
-        
-        $this->uri = '/Services/' . $serviceSid . '/Channels';
+        $this->solution = ['serviceSid' => $serviceSid, ];
+
+        $this->uri = '/Services/' . \rawurlencode($serviceSid) . '/Channels';
     }
 
     /**
-     * Create a new ChannelInstance
-     * 
+     * Create the ChannelInstance
+     *
      * @param array|Options $options Optional Arguments
-     * @return ChannelInstance Newly created ChannelInstance
+     * @return ChannelInstance Created ChannelInstance
+     * @throws TwilioException When an HTTP error occurs.
      */
-    public function create($options = array()) {
+    public function create(array $options = []): ChannelInstance {
         $options = new Values($options);
-        
-        $data = Values::of(array(
+
+        $data = Values::of([
             'FriendlyName' => $options['friendlyName'],
             'UniqueName' => $options['uniqueName'],
             'Attributes' => $options['attributes'],
             'Type' => $options['type'],
-        ));
-        
-        $payload = $this->version->create(
-            'POST',
-            $this->uri,
-            array(),
-            $data
-        );
-        
-        return new ChannelInstance(
-            $this->version,
-            $payload,
-            $this->solution['serviceSid']
-        );
+        ]);
+
+        $payload = $this->version->create('POST', $this->uri, [], $data);
+
+        return new ChannelInstance($this->version, $payload, $this->solution['serviceSid']);
     }
 
     /**
@@ -70,7 +63,8 @@ class ChannelList extends ListResource {
      * is reached.
      * The results are returned as a generator, so this operation is memory
      * efficient.
-     * 
+     *
+     * @param array|Options $options Optional Arguments
      * @param int $limit Upper limit for the number of records to return. stream()
      *                   guarantees to never return more than limit.  Default is no
      *                   limit
@@ -79,13 +73,13 @@ class ChannelList extends ListResource {
      *                        page_size is defined but a limit is defined, stream()
      *                        will attempt to read the limit with the most
      *                        efficient page size, i.e. min(limit, 1000)
-     * @return \Twilio\Stream stream of results
+     * @return Stream stream of results
      */
-    public function stream($limit = null, $pageSize = null) {
+    public function stream(array $options = [], int $limit = null, $pageSize = null): Stream {
         $limits = $this->version->readLimits($limit, $pageSize);
-        
-        $page = $this->page($limits['pageSize']);
-        
+
+        $page = $this->page($options, $limits['pageSize']);
+
         return $this->version->stream($page, $limits['limit'], $limits['pageLimit']);
     }
 
@@ -93,7 +87,8 @@ class ChannelList extends ListResource {
      * Reads ChannelInstance records from the API as a list.
      * Unlike stream(), this operation is eager and will load `limit` records into
      * memory before returning.
-     * 
+     *
+     * @param array|Options $options Optional Arguments
      * @param int $limit Upper limit for the number of records to return. read()
      *                   guarantees to never return more than limit.  Default is no
      *                   limit
@@ -104,55 +99,66 @@ class ChannelList extends ListResource {
      *                        efficient page size, i.e. min(limit, 1000)
      * @return ChannelInstance[] Array of results
      */
-    public function read($limit = null, $pageSize = Values::NONE) {
-        return iterator_to_array($this->stream($limit, $pageSize), false);
+    public function read(array $options = [], int $limit = null, $pageSize = null): array {
+        return \iterator_to_array($this->stream($options, $limit, $pageSize), false);
     }
 
     /**
      * Retrieve a single page of ChannelInstance records from the API.
      * Request is executed immediately
-     * 
+     *
+     * @param array|Options $options Optional Arguments
      * @param mixed $pageSize Number of records to return, defaults to 50
      * @param string $pageToken PageToken provided by the API
      * @param mixed $pageNumber Page Number, this value is simply for client state
-     * @return \Twilio\Page Page of ChannelInstance
+     * @return ChannelPage Page of ChannelInstance
      */
-    public function page($pageSize = Values::NONE, $pageToken = Values::NONE, $pageNumber = Values::NONE) {
-        $params = Values::of(array(
+    public function page(array $options = [], $pageSize = Values::NONE, string $pageToken = Values::NONE, $pageNumber = Values::NONE): ChannelPage {
+        $options = new Values($options);
+
+        $params = Values::of([
+            'Type' => Serialize::map($options['type'], function($e) { return $e; }),
             'PageToken' => $pageToken,
             'Page' => $pageNumber,
             'PageSize' => $pageSize,
-        ));
-        
-        $response = $this->version->page(
+        ]);
+
+        $response = $this->version->page('GET', $this->uri, $params);
+
+        return new ChannelPage($this->version, $response, $this->solution);
+    }
+
+    /**
+     * Retrieve a specific page of ChannelInstance records from the API.
+     * Request is executed immediately
+     *
+     * @param string $targetUrl API-generated URL for the requested results page
+     * @return ChannelPage Page of ChannelInstance
+     */
+    public function getPage(string $targetUrl): ChannelPage {
+        $response = $this->version->getDomain()->getClient()->request(
             'GET',
-            $this->uri,
-            $params
+            $targetUrl
         );
-        
+
         return new ChannelPage($this->version, $response, $this->solution);
     }
 
     /**
      * Constructs a ChannelContext
-     * 
-     * @param string $sid The sid
-     * @return \Twilio\Rest\IpMessaging\V1\Service\ChannelContext 
+     *
+     * @param string $sid The unique string that identifies the resource
      */
-    public function getContext($sid) {
-        return new ChannelContext(
-            $this->version,
-            $this->solution['serviceSid'],
-            $sid
-        );
+    public function getContext(string $sid): ChannelContext {
+        return new ChannelContext($this->version, $this->solution['serviceSid'], $sid);
     }
 
     /**
      * Provide a friendly representation
-     * 
+     *
      * @return string Machine friendly representation
      */
-    public function __toString() {
+    public function __toString(): string {
         return '[Twilio.IpMessaging.V1.ChannelList]';
     }
 }

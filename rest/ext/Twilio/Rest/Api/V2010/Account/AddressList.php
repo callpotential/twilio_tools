@@ -9,46 +9,48 @@
 
 namespace Twilio\Rest\Api\V2010\Account;
 
+use Twilio\Exceptions\TwilioException;
 use Twilio\ListResource;
 use Twilio\Options;
+use Twilio\Serialize;
+use Twilio\Stream;
 use Twilio\Values;
 use Twilio\Version;
 
 class AddressList extends ListResource {
     /**
      * Construct the AddressList
-     * 
+     *
      * @param Version $version Version that contains the resource
-     * @param string $accountSid The account_sid
-     * @return \Twilio\Rest\Api\V2010\Account\AddressList 
+     * @param string $accountSid The SID of the Account that is responsible for the
+     *                           resource
      */
-    public function __construct(Version $version, $accountSid) {
+    public function __construct(Version $version, string $accountSid) {
         parent::__construct($version);
-        
+
         // Path Solution
-        $this->solution = array(
-            'accountSid' => $accountSid,
-        );
-        
-        $this->uri = '/Accounts/' . $accountSid . '/Addresses.json';
+        $this->solution = ['accountSid' => $accountSid, ];
+
+        $this->uri = '/Accounts/' . \rawurlencode($accountSid) . '/Addresses.json';
     }
 
     /**
-     * Create a new AddressInstance
-     * 
-     * @param string $customerName The customer_name
-     * @param string $street The street
-     * @param string $city The city
-     * @param string $region The region
-     * @param string $postalCode The postal_code
-     * @param string $isoCountry The iso_country
+     * Create the AddressInstance
+     *
+     * @param string $customerName The name to associate with the new address
+     * @param string $street The number and street address of the new address
+     * @param string $city The city of the new address
+     * @param string $region The state or region of the new address
+     * @param string $postalCode The postal code of the new address
+     * @param string $isoCountry The ISO country code of the new address
      * @param array|Options $options Optional Arguments
-     * @return AddressInstance Newly created AddressInstance
+     * @return AddressInstance Created AddressInstance
+     * @throws TwilioException When an HTTP error occurs.
      */
-    public function create($customerName, $street, $city, $region, $postalCode, $isoCountry, $options = array()) {
+    public function create(string $customerName, string $street, string $city, string $region, string $postalCode, string $isoCountry, array $options = []): AddressInstance {
         $options = new Values($options);
-        
-        $data = Values::of(array(
+
+        $data = Values::of([
             'CustomerName' => $customerName,
             'Street' => $street,
             'City' => $city,
@@ -56,20 +58,13 @@ class AddressList extends ListResource {
             'PostalCode' => $postalCode,
             'IsoCountry' => $isoCountry,
             'FriendlyName' => $options['friendlyName'],
-        ));
-        
-        $payload = $this->version->create(
-            'POST',
-            $this->uri,
-            array(),
-            $data
-        );
-        
-        return new AddressInstance(
-            $this->version,
-            $payload,
-            $this->solution['accountSid']
-        );
+            'EmergencyEnabled' => Serialize::booleanToString($options['emergencyEnabled']),
+            'AutoCorrectAddress' => Serialize::booleanToString($options['autoCorrectAddress']),
+        ]);
+
+        $payload = $this->version->create('POST', $this->uri, [], $data);
+
+        return new AddressInstance($this->version, $payload, $this->solution['accountSid']);
     }
 
     /**
@@ -79,7 +74,7 @@ class AddressList extends ListResource {
      * is reached.
      * The results are returned as a generator, so this operation is memory
      * efficient.
-     * 
+     *
      * @param array|Options $options Optional Arguments
      * @param int $limit Upper limit for the number of records to return. stream()
      *                   guarantees to never return more than limit.  Default is no
@@ -89,13 +84,13 @@ class AddressList extends ListResource {
      *                        page_size is defined but a limit is defined, stream()
      *                        will attempt to read the limit with the most
      *                        efficient page size, i.e. min(limit, 1000)
-     * @return \Twilio\Stream stream of results
+     * @return Stream stream of results
      */
-    public function stream($options = array(), $limit = null, $pageSize = null) {
+    public function stream(array $options = [], int $limit = null, $pageSize = null): Stream {
         $limits = $this->version->readLimits($limit, $pageSize);
-        
+
         $page = $this->page($options, $limits['pageSize']);
-        
+
         return $this->version->stream($page, $limits['limit'], $limits['pageLimit']);
     }
 
@@ -103,7 +98,7 @@ class AddressList extends ListResource {
      * Reads AddressInstance records from the API as a list.
      * Unlike stream(), this operation is eager and will load `limit` records into
      * memory before returning.
-     * 
+     *
      * @param array|Options $options Optional Arguments
      * @param int $limit Upper limit for the number of records to return. read()
      *                   guarantees to never return more than limit.  Default is no
@@ -115,60 +110,68 @@ class AddressList extends ListResource {
      *                        efficient page size, i.e. min(limit, 1000)
      * @return AddressInstance[] Array of results
      */
-    public function read($options = array(), $limit = null, $pageSize = Values::NONE) {
-        return iterator_to_array($this->stream($options, $limit, $pageSize), false);
+    public function read(array $options = [], int $limit = null, $pageSize = null): array {
+        return \iterator_to_array($this->stream($options, $limit, $pageSize), false);
     }
 
     /**
      * Retrieve a single page of AddressInstance records from the API.
      * Request is executed immediately
-     * 
+     *
      * @param array|Options $options Optional Arguments
      * @param mixed $pageSize Number of records to return, defaults to 50
      * @param string $pageToken PageToken provided by the API
      * @param mixed $pageNumber Page Number, this value is simply for client state
-     * @return \Twilio\Page Page of AddressInstance
+     * @return AddressPage Page of AddressInstance
      */
-    public function page($options = array(), $pageSize = Values::NONE, $pageToken = Values::NONE, $pageNumber = Values::NONE) {
+    public function page(array $options = [], $pageSize = Values::NONE, string $pageToken = Values::NONE, $pageNumber = Values::NONE): AddressPage {
         $options = new Values($options);
-        $params = Values::of(array(
+
+        $params = Values::of([
             'CustomerName' => $options['customerName'],
             'FriendlyName' => $options['friendlyName'],
             'IsoCountry' => $options['isoCountry'],
             'PageToken' => $pageToken,
             'Page' => $pageNumber,
             'PageSize' => $pageSize,
-        ));
-        
-        $response = $this->version->page(
+        ]);
+
+        $response = $this->version->page('GET', $this->uri, $params);
+
+        return new AddressPage($this->version, $response, $this->solution);
+    }
+
+    /**
+     * Retrieve a specific page of AddressInstance records from the API.
+     * Request is executed immediately
+     *
+     * @param string $targetUrl API-generated URL for the requested results page
+     * @return AddressPage Page of AddressInstance
+     */
+    public function getPage(string $targetUrl): AddressPage {
+        $response = $this->version->getDomain()->getClient()->request(
             'GET',
-            $this->uri,
-            $params
+            $targetUrl
         );
-        
+
         return new AddressPage($this->version, $response, $this->solution);
     }
 
     /**
      * Constructs a AddressContext
-     * 
-     * @param string $sid The sid
-     * @return \Twilio\Rest\Api\V2010\Account\AddressContext 
+     *
+     * @param string $sid The unique string that identifies the resource
      */
-    public function getContext($sid) {
-        return new AddressContext(
-            $this->version,
-            $this->solution['accountSid'],
-            $sid
-        );
+    public function getContext(string $sid): AddressContext {
+        return new AddressContext($this->version, $this->solution['accountSid'], $sid);
     }
 
     /**
      * Provide a friendly representation
-     * 
+     *
      * @return string Machine friendly representation
      */
-    public function __toString() {
+    public function __toString(): string {
         return '[Twilio.Api.V2010.AddressList]';
     }
 }
