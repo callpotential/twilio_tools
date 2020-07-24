@@ -44,7 +44,7 @@ class SubAccounts
         }
         try {
             $client = new Twilio\Rest\Client($accountSid, $token);
-            $accountContext = $client->accounts($subAccountSid);
+            $accountContext = $client->api->v2010->accounts($subAccountSid);
             if ($accountContext) {
                 try {
                     $accountContext->update(array("status" => $status));

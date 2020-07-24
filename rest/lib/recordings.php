@@ -9,7 +9,7 @@ class Recordings
             $client = new Twilio\Rest\Client($sid, $token);
             $pageSize = 1000;
             $result = array();
-            $page = $client->recordings->page(array(), $pageSize, null, $pageNum);
+            $page = $client->api->v2010->recordings->page(array(), $pageSize, 1, $pageNum);
             foreach ($page as $key => $recording) {
                 $result[] = array(
                     $recording->accountSid,
@@ -48,7 +48,7 @@ class Recordings
     {
         try {
             $client = new Twilio\Rest\Client($accountSid, $token);
-            $recordingContext = $client->recordings($recordingSid);
+            $recordingContext = $client->api->v2010->recordings($recordingSid);
             if ($recordingContext) {
                 try {
                     $recordingContext->delete();
