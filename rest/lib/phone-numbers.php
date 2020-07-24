@@ -7,9 +7,9 @@ class PhoneNumbers
     {
         try {
             $client = new Twilio\Rest\Client($sid, $token);
-            $pageSize = 500;
+            $pageSize = 50;
             $result = array();
-            $page = $client->incomingPhoneNumbers->page(array(), $pageSize, null, $pageNum);
+            $page = $client->api->v2010->incomingPhoneNumbers->page(array(), $pageSize, 1, $pageNum);
             foreach ($page as $key => $phoneNumber) {
                 $result[] = array(
                     $phoneNumber->accountSid,
