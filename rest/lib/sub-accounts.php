@@ -3,13 +3,13 @@
 class SubAccounts
 {
 
-    static public function all($sid, $token, $pageNum)
+    static public function all($sid, $token, $pageNum, $pageToken)
     {
         try {
             $client = new Twilio\Rest\Client($sid, $token);
             $pageSize = 30;
             $result = array();
-            $page = $client->api->v2010->accounts->page(array(), $pageSize, 1, $pageNum);
+            $page = $client->api->v2010->accounts->page(array(), $pageSize, $pageToken, $pageNum);
             foreach ($page as $key => $account) {
                 if ($sid !== $account->sid) {
                     $result[] = array(
@@ -20,7 +20,14 @@ class SubAccounts
                     );
                 }
             }
-            echo json_encode(array('header' => SubAccounts::header(), 'data' => $result, 'hasNextPage' => $page->getNextPageUrl() != null));
+
+            if ($page->getNextPageUrl() != null) {
+                $parts = parse_url($page->getNextPageUrl());
+                parse_str($parts['query'], $queryParams);
+                $pageToken = $queryParams['PageToken'];
+            }
+
+            echo json_encode(array('header' => SubAccounts::header(), 'data' => $result, 'hasNextPage' => $page->getNextPageUrl() != null, 'pageToken' => !is_null($pageToken) ? $pageToken : 1));
         } catch (Exception $e) {
             echo json_encode(array('error' => 'Unable to fetch phone numbers. Error: (' . $e->getCode() . ') ' . $e->getMessage()));
         }
