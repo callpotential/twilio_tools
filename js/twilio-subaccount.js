@@ -8,11 +8,11 @@ TWILIO.subaccount = (function ($, window, document, undefined) {
 
     var addHeader = true;
 
-    function fetch(sid, token, pageNum) {
+    function fetch(sid, token, pageNum, pageToken = 1) {
         TWILIO.util.progress("Fetching sub accounts, page: " + pageNum);
         $.ajax({
             type: "GET",
-            url: "rest/sub-accounts/all/" + sid + "/" + token + "/" + pageNum,
+            url: "rest/sub-accounts/all/" + sid + "/" + token + "/" + pageNum + "/" + pageToken,
             dataType: "json",
             xhrFields: {
                 withCredentials: false
@@ -28,7 +28,7 @@ TWILIO.subaccount = (function ($, window, document, undefined) {
                     }
                     response = response.concat(jsonResult.data);
                     if (jsonResult.hasNextPage) {
-                        fetch(sid, token, pageNum + 1);
+                        fetch(sid, token, pageNum + 1, jsonResult.pageToken);
                     }
                     else {
                         TWILIO.util.download("sub_accounts.csv", response);

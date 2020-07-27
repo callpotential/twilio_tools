@@ -16,7 +16,7 @@ Epi::setPath('base', 'ext/epiphany');
 Epi::init('route', 'session');
 EpiSession::employ(array(EpiSession::PHP));
 
-getRoute()->get('/sub-accounts/all/(.*)/(.*)/([0-9]+)', array('SubAccounts', 'all'));
+getRoute()->get('/sub-accounts/all/(.*)/(.*)/([0-9]+)/(.*)', array('SubAccounts', 'all'));
 getRoute()->post('/sub-accounts/status/(.*)/(.*)/(.*)/(.*)', array('SubAccounts', 'status'));
 
 getRoute()->get('/phone-numbers/all/(.*)/(.*)/([0-9]+)', array('PhoneNumbers', 'all'));
