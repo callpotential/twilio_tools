@@ -3,13 +3,13 @@
 class Recordings
 {
 
-    static public function all($sid, $token, $pageNum)
+    static public function all($sid, $token, $pageNum, $pageToken)
     {
         try {
             $client = new Twilio\Rest\Client($sid, $token);
             $pageSize = 1000;
             $result = array();
-            $page = $client->api->v2010->recordings->page(array(), $pageSize, 1, $pageNum);
+            $page = $client->api->v2010->recordings->page(array(), $pageSize, $pageToken, 1, $pageNum);
             foreach ($page as $key => $recording) {
                 $result[] = array(
                     $recording->accountSid,
@@ -23,7 +23,14 @@ class Recordings
                     $recording->uri
                 );
             }
-            echo json_encode(array('header' => Recordings::header(), 'data' => $result, 'hasNextPage' => count($result) >= $pageSize));
+
+            if ($page->getNextPageUrl() != null) {
+                $parts = parse_url($page->getNextPageUrl());
+                parse_str($parts['query'], $queryParams);
+                $pageToken = $queryParams['PageToken'];
+            }
+
+            echo json_encode(array('header' => Recordings::header(), 'data' => $result, 'hasNextPage' => count($result) >= $pageSize, 'pageToken' => !is_null($pageToken) ? $pageToken : 1));
         } catch (Exception $e) {
             echo json_encode(array('error' => 'Unable to fetch recordings. Error: (' . $e->getCode() . ') ' . $e->getMessage()));
         }
