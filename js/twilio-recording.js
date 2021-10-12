@@ -8,7 +8,7 @@ TWILIO.recording = (function ($, window, document, undefined) {
 
     var headerAdded = false;
 
-    function fetch(sidArray, sidIndex, pageNum) {
+    function fetch(sidArray, sidIndex, pageNum, pageToken = 1) {
         if (!TWILIO.util.validateSidToken(sidArray[sidIndex])) {
             fetchNextSidOrFinish(sidArray, sidIndex);
             return;
@@ -16,7 +16,7 @@ TWILIO.recording = (function ($, window, document, undefined) {
         TWILIO.util.progress("Fetching recordings, SID: " + sidArray[sidIndex][0] + ", page: " + pageNum);
         $.ajax({
             type: "GET",
-            url: "rest/recordings/all/" + sidArray[sidIndex][0] + "/" + sidArray[sidIndex][1] + "/" + pageNum,
+            url: "rest/recordings/all/" + sidArray[sidIndex][0] + "/" + sidArray[sidIndex][1] + "/" + pageNum + "/" + pageToken,
             dataType: "json",
             xhrFields: {
                 withCredentials: false
@@ -33,7 +33,7 @@ TWILIO.recording = (function ($, window, document, undefined) {
                     }
                     response = response.concat(jsonResult.data);
                     if (jsonResult.hasNextPage) {
-                        fetch(sidArray, sidIndex, pageNum + 1);
+                        fetch(sidArray, sidIndex, pageNum + 1, jsonResult.pageToken);
                     }
                     else {
                         fetchNextSidOrFinish(sidArray, sidIndex);

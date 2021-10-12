@@ -22,7 +22,7 @@ getRoute()->post('/sub-accounts/status/(.*)/(.*)/(.*)/(.*)', array('SubAccounts'
 getRoute()->get('/phone-numbers/all/(.*)/(.*)/([0-9]+)', array('PhoneNumbers', 'all'));
 getRoute()->delete('/phone-numbers/delete/(.*)/(.*)/(.*)', array('PhoneNumbers', 'delete'));
 
-getRoute()->get('/recordings/all/(.*)/(.*)/([0-9]+)', array('Recordings', 'all'));
+getRoute()->get('/recordings/all/(.*)/(.*)/([0-9]+)/(.*)', array('Recordings', 'all'));
 getRoute()->delete('/recordings/delete/(.*)/(.*)/(.*)', array('Recordings', 'delete'));
 
 getRoute()->run();
