@@ -8,7 +8,7 @@ TWILIO.recording = (function ($, window, document, undefined) {
 
     var headerAdded = false;
 
-    function fetch(sidArray, sidIndex, pageNum, pageToken = 1) {
+    function fetch(sidArray, sidIndex, pageNum, pageToken = '') {
         if (!TWILIO.util.validateSidToken(sidArray[sidIndex])) {
             fetchNextSidOrFinish(sidArray, sidIndex);
             return;

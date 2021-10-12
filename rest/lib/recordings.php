@@ -9,6 +9,7 @@ class Recordings
             $client = new Twilio\Rest\Client($sid, $token);
             $pageSize = 1000;
             $result = array();
+            $pageToken = (empty($pageToken)) ? null : $pageToken;
             $page = $client->api->v2010->recordings->page(array(), $pageSize, $pageToken, 1, $pageNum);
             foreach ($page as $key => $recording) {
                 $result[] = array(
