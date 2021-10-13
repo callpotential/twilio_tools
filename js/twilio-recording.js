@@ -122,9 +122,10 @@ TWILIO.recording = (function ($, window, document, undefined) {
         $.each(sidArray, function (index, item) {
             if (TWILIO.util.validateSidTokenRecSid(item)) {
                 hasValidInput = true;
-                $.ajax({
+                return $.ajax({
                     type: "DELETE",
                     url: "rest/recordings/delete/" + item[0] + "/" + item[1] + "/" + item[2],
+                    async: false,
                     dataType: "json",
                     xhrFields: {
                         withCredentials: false
