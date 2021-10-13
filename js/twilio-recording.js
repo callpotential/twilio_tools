@@ -96,7 +96,9 @@ TWILIO.recording = (function ($, window, document, undefined) {
                             label: 'Yes',
                             action: function (dialog) {
                                 dialog.close();
-                                deleteRecording(parsed);
+                                window.setTimeout(function(){
+                                    deleteRecording(parsed);
+                                }, 1000);
                             }
                         }, {
                             label: 'No',
